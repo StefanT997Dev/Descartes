@@ -26,6 +26,11 @@ namespace Application.Diffs
 
             public async Task<Result<Unit>> Handle(Command request, CancellationToken cancellationToken)
             {
+                if(request.LeftDiff.Data==null)
+                {
+                    return Result<Unit>.Failure("Data from request is null");
+                }
+
                 var targetDiff = await _repository.GetDiffAsync(request.Id);
 
                 if (targetDiff == null)
@@ -43,7 +48,7 @@ namespace Application.Diffs
                     return Result<Unit>.Failure("Falied to add the left diff");
                 }
 
-                var result = await _repository.UpdateDiffAsync(targetDiff,request.LeftDiff.Data);
+                var result = await _repository.UpdateLeftDiffAsync(targetDiff,request.LeftDiff.Data);
 
                 if (result)
                 {

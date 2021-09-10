@@ -1,6 +1,8 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Application.Core;
+using Application.DTOs;
+using Application.Interfaces;
 using Domain;
 using MediatR;
 using Persistence;
@@ -12,40 +14,41 @@ namespace Application.Diffs
         public class Command : IRequest<Result<Unit>>
         {
             public int Id { get; set; }
-            public string Data { get; set; }
+            public DiffModelDto RightDiff { get; set; }
         }
         public class Handler : IRequestHandler<Command, Result<Unit>>
         {
-            private readonly DataContext _context;
-            public Handler(DataContext context)
+            private readonly IDiffRepository _repository;
+            public Handler(IDiffRepository repository)
             {
-                _context = context;
+                _repository = repository;
             }
 
             public async Task<Result<Unit>> Handle(Command request, CancellationToken cancellationToken)
             {
-                var targetDiff = await _context.Diffs.FindAsync(request.Id);
+                if(request.RightDiff.Data==null)
+                {
+                    return Result<Unit>.Failure("Data from request is null");
+                }
+
+                var targetDiff = await _repository.GetDiffAsync(request.Id);
 
                 if (targetDiff == null)
                 {
                     var diff = new Diff()
                     {
                         Id = request.Id,
-                        Right = request.Data
+                        Right = request.RightDiff.Data
                     };
 
-                    _context.Diffs.Add(diff);
-
-                    var res = await _context.SaveChangesAsync() > 0;
+                    var res = await _repository.CreateDiffAsync(diff);
 
                     if (res)
                         return Result<Unit>.Success(Unit.Value);
                     return Result<Unit>.Failure("Falied to add the right diff");
                 }
 
-                targetDiff.Right = request.Data;
-
-                var result = await _context.SaveChangesAsync() > 0;
+                var result = await _repository.UpdateRightDiffAsync(targetDiff,request.RightDiff.Data);
 
                 if (result)
                 {

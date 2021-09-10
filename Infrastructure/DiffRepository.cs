@@ -1,6 +1,7 @@
 using System.Threading.Tasks;
 using Application.Interfaces;
 using Domain;
+using Microsoft.EntityFrameworkCore;
 using Persistence;
 
 namespace Infrastructure
@@ -25,11 +26,22 @@ namespace Infrastructure
             return await _context.Diffs.FindAsync(id);
         }
 
-        public async Task<bool> UpdateDiffAsync(Diff diff, string left)
+        public async Task<bool> UpdateLeftDiffAsync(Diff diff, string left)
         {
             diff.Left=left;
 
-            return await _context.SaveChangesAsync()>0;
+            await _context.SaveChangesAsync();
+
+            return _context.Entry(diff).State != EntityState.Unchanged;
+        }
+
+         public async Task<bool> UpdateRightDiffAsync(Diff diff, string right)
+        {
+            diff.Right=right;
+
+            await _context.SaveChangesAsync();
+
+            return _context.Entry(diff).State != EntityState.Unchanged;
         }
     }
 }

@@ -7,7 +7,8 @@ namespace Application.Interfaces
     public interface IDiffRepository
     {
         Task<Diff> GetDiffAsync(int id);    
-        Task<Boolean> CreateDiffAsync(Diff diff);
-        Task<Boolean> UpdateDiffAsync(Diff diff,string left);
+        Task<bool> CreateDiffAsync(Diff diff);
+        Task<bool> UpdateLeftDiffAsync(Diff diff,string left);
+        Task<bool> UpdateRightDiffAsync(Diff diff, string right);
     }
 }

@@ -16,22 +16,18 @@ namespace API.Controllers
         
         protected ActionResult HandleResult<T>(Result<T> result)
         {
-            if(!result.IsSuccess)
-                return NotFound();
-            if(result.IsSuccess && result.Value!=null)
+            if(!result.IsSuccess && result.Error=="Data from request is null")
+                return BadRequest();
+            if(result.IsSuccess)
                 return Created("~v1/diff/{id}",result);
-            if(result.IsSuccess && result.Value==null)
-                return NotFound();
-            return BadRequest(result.Error);
+            return NotFound(result.Error);
         }
 
         protected ActionResult HandleTupleResult<T,P>(Result<Tuple<T,P>> result)
         {
-            if(result.Value.Item1==null)
-                return Ok(result.Value.Item2);
-            if(result.Value.Item2==null)
-                return Ok(result.Value.Item1);
-            return NotFound();
+            if(!result.IsSuccess)
+                return NotFound();
+            return Ok(result.Value);
         }
     }
 }
